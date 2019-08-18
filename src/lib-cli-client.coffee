@@ -24,7 +24,9 @@ exports.loadDevLibrary = (contentWindow) ->
 
 exports.loadProdLibrary = (contentWindow, id) ->
     initContentWindowGlobals(contentWindow)
-    loadLibrary(contentWindow, id, "#{extcodeserver}/#{id}")
+
+    # dev: hard-code to point to webpack dev bundle
+    loadLibrary(contentWindow, id, "http://localhost:3001/static/js/pagedraw.bundle.js")
 
 
 # NOTE: I'm doing window. here to guarantee our bundling process won't change the name of this function,
@@ -74,6 +76,10 @@ loadLibrary = (contentWindow, id, url) ->
             get_code().then(({error, bundle}) ->
                 if error? then resolve_with_error('net-err', error, null)
                 else
+                    # hack: webpack dev bundle connects to webpack dev server
+                    # using current window's protocol and hostname, which is
+                    # wrong for electron. hardcode to proper values.
+                    bundle = bundle.replace(/protocol: window.location.protocol/, 'protocol: "http:"').replace('hostname: window.location.hostname', 'hostname: "localhost:3001"');
                     eval_result = window.__evalBundleWrapperForErrorDetector(contentWindow, bundle)
                     specs = if (typeof eval_result == 'object') and eval_result.default? then eval_result.default else eval_result
 

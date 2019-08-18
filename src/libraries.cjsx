@@ -344,6 +344,13 @@ exports.Library = Library = Model.register 'ext-lib', class Library extends Mode
                     msg = "Library load resulted in a different state than at lib install. Lib: #{@name()}"
                     track_error(new Error(msg), msg)
 
+                # dev/hack: the loaded specs from webpack will be different
+                # from the ones cached in the project's pagedraw.json file.
+                # Override those with the new ones so that the UI menu shows
+                # the latest library contents.
+                @cachedExternalCodeSpecs = externalCodeSpecs
+                @cachedDevExternalCodeSpecs = externalCodeSpecs
+
                 contentWindow.pd__loaded_libraries[@version_id] = {err: null, lib: this, externalCodeSpecs, renderByRef}
 
 
